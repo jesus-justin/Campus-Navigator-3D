@@ -1,0 +1,243 @@
+const ui = {
+  apiBase: document.getElementById("apiBase"),
+  token: document.getElementById("token"),
+  externalId: document.getElementById("externalId"),
+  displayName: document.getElementById("displayName"),
+  loginBtn: document.getElementById("loginBtn"),
+  loginMessage: document.getElementById("loginMessage"),
+  fromDate: document.getElementById("fromDate"),
+  toDate: document.getElementById("toDate"),
+  heatmapType: document.getElementById("heatmapType"),
+  applyBtn: document.getElementById("applyBtn"),
+  status: document.getElementById("status"),
+  totalVisits: document.getElementById("totalVisits"),
+  topLocation: document.getElementById("topLocation"),
+  questSuccess: document.getElementById("questSuccess"),
+  heatmap: document.getElementById("heatmap"),
+  pathsTable: document.querySelector("#pathsTable tbody"),
+  questChart: document.getElementById("questChart")
+};
+
+const defaults = {
+  apiBase: "http://localhost/Campus-Navigator-3D/api",
+  token: "",
+  externalId: "admin-001",
+  displayName: "Admin User"
+};
+
+let locationMap = {};
+
+function setDefaults() {
+  ui.apiBase.value = localStorage.getItem("cn_api_base") || defaults.apiBase;
+  ui.token.value = localStorage.getItem("cn_token") || defaults.token;
+  ui.externalId.value = localStorage.getItem("cn_external_id") || defaults.externalId;
+  ui.displayName.value = localStorage.getItem("cn_display_name") || defaults.displayName;
+
+  const today = new Date();
+  const prior = new Date();
+  prior.setDate(today.getDate() - 7);
+
+  ui.fromDate.value = formatDate(prior);
+  ui.toDate.value = formatDate(today);
+}
+
+async function loginAdmin() {
+  const base = ui.apiBase.value.trim() || defaults.apiBase;
+  const payload = {
+    externalId: ui.externalId.value.trim(),
+    displayName: ui.displayName.value.trim()
+  };
+
+  ui.loginMessage.textContent = "Requesting token...";
+
+  try {
+    const res = await fetch(base.replace(/\/$/, "") + "/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (data && data.token) {
+      ui.token.value = data.token;
+      localStorage.setItem("cn_token", data.token);
+    }
+
+    localStorage.setItem("cn_external_id", payload.externalId);
+    localStorage.setItem("cn_display_name", payload.displayName);
+
+    if (data.user && data.user.role !== "admin") {
+      ui.loginMessage.textContent = "Token issued, but this user is not admin.";
+    } else {
+      ui.loginMessage.textContent = "Token issued. You can load analytics now.";
+    }
+  } catch (err) {
+    ui.loginMessage.textContent = "Login failed. Check API base and credentials.";
+  }
+}
+
+function formatDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function dateToRange(dateStr, endOfDay) {
+  if (!dateStr) return "";
+  return endOfDay ? `${dateStr} 23:59:59` : `${dateStr} 00:00:00`;
+}
+
+function setStatus(connected) {
+  ui.status.textContent = connected ? "Connected" : "Disconnected";
+  ui.status.style.background = connected ? "rgba(71, 201, 177, 0.2)" : "rgba(255, 122, 110, 0.2)";
+  ui.status.style.borderColor = connected ? "rgba(71, 201, 177, 0.4)" : "rgba(255, 122, 110, 0.4)";
+}
+
+async function fetchJson(path) {
+  const base = ui.apiBase.value.trim() || defaults.apiBase;
+  const token = ui.token.value.trim();
+  const res = await fetch(base.replace(/\/$/, "") + path, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {}
+  });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  return await res.json();
+}
+
+async function loadDashboard() {
+  const from = dateToRange(ui.fromDate.value, false);
+  const to = dateToRange(ui.toDate.value, true);
+  const type = ui.heatmapType.value;
+
+  localStorage.setItem("cn_api_base", ui.apiBase.value.trim());
+  localStorage.setItem("cn_token", ui.token.value.trim());
+
+  try {
+    const locations = await fetchJson("/locations");
+    locationMap = buildLocationMap(locations.locations || []);
+    const heatmap = await fetchJson(`/admin/heatmap?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&type=${encodeURIComponent(type)}`);
+    const paths = await fetchJson(`/admin/paths?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&top=15`);
+    const questStats = await fetchJson(`/admin/quest-stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+
+    setStatus(true);
+    renderHeatmap(heatmap.data || []);
+    renderPaths(paths.data || [], locationMap);
+    renderQuestStats(questStats.data || []);
+  } catch (err) {
+    setStatus(false);
+    renderHeatmap([]);
+    renderPaths([], {});
+    renderQuestStats([]);
+  }
+}
+
+function buildLocationMap(locations) {
+  const map = {};
+  locations.forEach((loc) => {
+    map[loc.id] = loc.name || `Location ${loc.id}`;
+  });
+  return map;
+}
+
+function renderHeatmap(rows) {
+  ui.heatmap.innerHTML = "";
+  let total = 0;
+  let top = "-";
+  let topCount = 0;
+
+  rows.forEach((row) => {
+    const count = Number(row.count || 0);
+    total += count;
+    if (count > topCount) {
+      topCount = count;
+      top = row.name || `Location ${row.location_id}`;
+    }
+  });
+
+  const max = Math.max(...rows.map(r => Number(r.count || 0)), 1);
+
+  rows.forEach((row) => {
+    const item = document.createElement("div");
+    item.className = "heatmap-item";
+    const label = document.createElement("div");
+    label.textContent = row.name || `Location ${row.location_id}`;
+    const bar = document.createElement("div");
+    bar.className = "heat-bar";
+    bar.style.width = `${(Number(row.count || 0) / max) * 100}%`;
+    const value = document.createElement("div");
+    value.textContent = row.count;
+
+    item.append(label, bar, value);
+    ui.heatmap.appendChild(item);
+  });
+
+  ui.totalVisits.textContent = total.toLocaleString();
+  ui.topLocation.textContent = top;
+}
+
+function renderPaths(rows, map) {
+  ui.pathsTable.innerHTML = "";
+  if (!rows.length) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td colspan=\"3\" class=\"muted\">No path data</td>";
+    ui.pathsTable.appendChild(tr);
+    return;
+  }
+
+  rows.forEach((row) => {
+    const fromName = map[row.from_location_id] || row.from_location_id;
+    const toName = map[row.to_location_id] || row.to_location_id;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${fromName}</td><td>${toName}</td><td>${row.count}</td>`;
+    ui.pathsTable.appendChild(tr);
+  });
+}
+
+function renderQuestStats(rows) {
+  ui.questChart.innerHTML = "";
+  let totalRuns = 0;
+  let successRuns = 0;
+
+  rows.forEach((row) => {
+    const total = Number(row.total_runs || 0);
+    const success = Number(row.success_runs || 0);
+    totalRuns += total;
+    successRuns += success;
+
+    const pct = total > 0 ? Math.round((success / total) * 100) : 0;
+
+    const item = document.createElement("div");
+    item.className = "quest-item";
+
+    const title = document.createElement("div");
+    title.textContent = row.title || `Quest ${row.quest_id}`;
+
+    const rowInfo = document.createElement("div");
+    rowInfo.className = "quest-row";
+    rowInfo.innerHTML = `<span>${success}/${total} success</span><span>${Math.round(row.avg_time_sec || 0)} sec avg</span>`;
+
+    const progress = document.createElement("div");
+    progress.className = "progress";
+    const bar = document.createElement("span");
+    bar.style.width = `${pct}%`;
+    progress.appendChild(bar);
+
+    item.append(title, rowInfo, progress);
+    ui.questChart.appendChild(item);
+  });
+
+  const overall = totalRuns > 0 ? Math.round((successRuns / totalRuns) * 100) : 0;
+  ui.questSuccess.textContent = `${overall}%`;
+}
+
+ui.applyBtn.addEventListener("click", loadDashboard);
+ui.loginBtn.addEventListener("click", loginAdmin);
+
+setDefaults();
+loadDashboard();

@@ -11,6 +11,11 @@ namespace CampusNavigator
         public Text questStep;
         public Text statusText;
         public Text promptText;
+        public GameObject questListPanel;
+        public Text questListText;
+        public InputConfig inputConfig;
+
+        private QuestDto[] cachedQuests = new QuestDto[0];
 
         private void Awake()
         {
@@ -24,9 +29,11 @@ namespace CampusNavigator
 
         public void SetQuestList(QuestDto[] quests)
         {
-            if (quests != null && quests.Length > 0)
+            cachedQuests = quests ?? new QuestDto[0];
+            RefreshQuestList();
+            if (cachedQuests.Length > 0)
             {
-                SetStatus("Quests loaded: " + quests.Length);
+                SetStatus("Quests loaded: " + cachedQuests.Length);
             }
         }
 
@@ -38,7 +45,15 @@ namespace CampusNavigator
             }
             if (questStep != null)
             {
-                questStep.text = step != null ? "Step: " + step.action_type + " @ " + step.target_location_id : "";
+                if (step != null)
+                {
+                    string name = LocationRegistry.GetName(step.target_location_id);
+                    questStep.text = "Step: " + step.action_type + " @ " + name;
+                }
+                else
+                {
+                    questStep.text = "";
+                }
             }
             SetStatus("Quest active");
         }
@@ -65,6 +80,48 @@ namespace CampusNavigator
             {
                 promptText.text = "";
             }
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(GetQuestListKey()))
+            {
+                ToggleQuestList();
+            }
+        }
+
+        private void ToggleQuestList()
+        {
+            if (questListPanel == null)
+            {
+                return;
+            }
+            questListPanel.SetActive(!questListPanel.activeSelf);
+            RefreshQuestList();
+        }
+
+        private void RefreshQuestList()
+        {
+            if (questListText == null)
+            {
+                return;
+            }
+            if (cachedQuests == null || cachedQuests.Length == 0)
+            {
+                questListText.text = "No quests";
+                return;
+            }
+            string list = "";
+            for (int i = 0; i < cachedQuests.Length; i++)
+            {
+                list += (i + 1) + ". " + cachedQuests[i].title + "\n";
+            }
+            questListText.text = list.TrimEnd();
+        }
+
+        private KeyCode GetQuestListKey()
+        {
+            return inputConfig != null ? inputConfig.questListKey : KeyCode.Q;
         }
     }
 }

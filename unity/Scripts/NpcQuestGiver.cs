@@ -2,39 +2,20 @@ using UnityEngine;
 
 namespace CampusNavigator
 {
-    public class NpcQuestGiver : MonoBehaviour
+    public class NpcQuestGiver : MonoBehaviour, IInteractable
     {
         public int questId = 1;
-        public string prompt = "Press E to accept quest";
+        public string prompt = "Talk to NPC";
+        public string greeting = "Hello! Need help finding your next task?";
 
-        private bool playerInRange;
-
-        private void Update()
+        public string GetPrompt()
         {
-            if (playerInRange && Input.GetKeyDown(KeyCode.E))
-            {
-                QuestManager.Instance?.StartQuestById(questId);
-            }
+            return prompt;
         }
 
-        private void OnTriggerEnter(Collider other)
+        public void Interact(PlayerInteraction player)
         {
-            if (!other.CompareTag("Player"))
-            {
-                return;
-            }
-            playerInRange = true;
-            QuestUI.Instance?.ShowPrompt(prompt);
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (!other.CompareTag("Player"))
-            {
-                return;
-            }
-            playerInRange = false;
-            QuestUI.Instance?.ClearPrompt();
+            DialogueManager.Instance?.ShowQuestDialogue(greeting, questId);
         }
     }
 }

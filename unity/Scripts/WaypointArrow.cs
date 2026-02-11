@@ -7,6 +7,7 @@ namespace CampusNavigator
     {
         public RectTransform arrow;
         public Text distanceText;
+        public Text targetText;
         public Transform player;
         public Camera mainCamera;
 
@@ -32,6 +33,10 @@ namespace CampusNavigator
                 {
                     distanceText.text = "";
                 }
+                if (targetText != null)
+                {
+                    targetText.text = "";
+                }
                 return;
             }
 
@@ -41,6 +46,10 @@ namespace CampusNavigator
                 if (distanceText != null)
                 {
                     distanceText.text = "";
+                }
+                if (targetText != null)
+                {
+                    targetText.text = "";
                 }
                 return;
             }
@@ -57,6 +66,10 @@ namespace CampusNavigator
             {
                 float dist = Vector3.Distance(player.position, targetPos);
                 distanceText.text = Mathf.RoundToInt(dist) + " m";
+            }
+            if (targetText != null)
+            {
+                targetText.text = LocationRegistry.GetName(QuestManager.Instance.ActiveTargetLocationId);
             }
         }
     }

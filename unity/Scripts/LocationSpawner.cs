@@ -78,7 +78,7 @@ namespace CampusNavigator
             markerComp.locationId = loc.id;
             markerComp.locationName = loc.name;
 
-            LocationRegistry.Register(loc.id, marker.transform);
+            LocationRegistry.Register(loc.id, marker.transform, loc.name);
 
             float radius = Mathf.Max(1f, loc.radius_m);
             marker.transform.localScale = new Vector3(radius * 2f, marker.transform.localScale.y, radius * 2f);

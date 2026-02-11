@@ -10,7 +10,7 @@ namespace CampusNavigator
 
         private void OnEnable()
         {
-            LocationRegistry.Register(locationId, transform);
+            LocationRegistry.Register(locationId, transform, locationName);
         }
 
         private void OnDisable()

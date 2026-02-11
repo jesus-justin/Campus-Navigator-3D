@@ -6,14 +6,19 @@ namespace CampusNavigator
     public static class LocationRegistry
     {
         private static readonly Dictionary<int, Transform> registry = new Dictionary<int, Transform>();
+        private static readonly Dictionary<int, string> names = new Dictionary<int, string>();
 
-        public static void Register(int locationId, Transform marker)
+        public static void Register(int locationId, Transform marker, string locationName = "")
         {
             if (locationId <= 0 || marker == null)
             {
                 return;
             }
             registry[locationId] = marker;
+            if (!string.IsNullOrEmpty(locationName))
+            {
+                names[locationId] = locationName;
+            }
         }
 
         public static void Unregister(int locationId, Transform marker)
@@ -25,6 +30,7 @@ namespace CampusNavigator
             if (registry.TryGetValue(locationId, out var current) && current == marker)
             {
                 registry.Remove(locationId);
+                names.Remove(locationId);
             }
         }
 
@@ -37,6 +43,11 @@ namespace CampusNavigator
             }
             position = Vector3.zero;
             return false;
+        }
+
+        public static string GetName(int locationId)
+        {
+            return names.TryGetValue(locationId, out var name) ? name : "Location " + locationId;
         }
     }
 }

@@ -14,12 +14,20 @@ Create these GameObjects:
 - LocationSpawner (add LocationSpawner)
 - MiniMapCamera (add MiniMapCamera)
 - WaypointArrow (add WaypointArrow)
+- DialogueManager (add DialogueManager)
+- InventoryManager (add InventoryManager)
+- InventoryUI (add InventoryUI)
+- PlayerInteraction (add PlayerInteraction)
+
+Input config:
+- In Project window, create InputConfig asset (Create > CampusNavigator > InputConfig).
+- Assign it to PlayerInteraction, DialogueManager, QuestUI, and InventoryUI.
 
 ## 2) Player
 
 - Create an empty GameObject "Player" and tag it as Player.
 - Add CharacterController.
-- Add PlayerController and TelemetryTracker.
+- Add PlayerController, TelemetryTracker, and PlayerInteraction.
 - Create a child Camera (MainCamera tag).
 - Add CameraFollow to the Camera, set target to Player.
 - Set PlayerController.cameraPivot to the Camera transform.
@@ -41,6 +49,16 @@ Option B (manual):
 - Add LocationMarker and set locationId to match the database.
 - Optionally add a visible mesh (cube) to see the zone.
 
+Quest interactable (optional):
+- Add QuestInteractable to any object and set locationId.
+
+Submit station (submit steps):
+- Add SubmitStation to the quest target location.
+- Set locationId to match the step target.
+
+Item pickup:
+- Add ItemPickup to a prop and set itemId (e.g., Enrollment Form).
+
 ## 5) UI Canvas
 
 - Create a Canvas > Panel.
@@ -56,6 +74,16 @@ Mini-map UI:
 Waypoint arrow UI:
 - Create a UI Image (arrow icon) and a Text for distance.
 - Add WaypointArrow script and assign arrow RectTransform, distance Text, player, and main camera.
+- (Optional) Assign a Text for target name.
+
+Dialogue UI:
+- Create a Panel with a Title Text, Body Text, and 3 Buttons.
+- Add DialogueUI and wire the panel, texts, and buttons.
+- Add DialogueManager and assign DialogueUI + InputConfig.
+
+Inventory UI:
+- Create a Panel with a Text element for inventory list.
+- Add InventoryUI and assign panel + list text + InputConfig.
 
 ## 6) API
 

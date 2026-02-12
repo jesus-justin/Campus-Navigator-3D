@@ -15,6 +15,8 @@ namespace CampusNavigator
         public Text questListText;
         public InputConfig inputConfig;
 
+        public bool IsQuestListOpen => questListPanel != null && questListPanel.activeSelf;
+
         private QuestDto[] cachedQuests = new QuestDto[0];
 
         private void Awake()

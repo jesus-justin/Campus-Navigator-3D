@@ -13,6 +13,8 @@ namespace CampusNavigator
         public Text listText;
         public InputConfig inputConfig;
 
+        public bool IsOpen => panel != null && panel.activeSelf;
+
         private void Awake()
         {
             if (Instance != null && Instance != this)

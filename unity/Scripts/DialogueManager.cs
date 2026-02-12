@@ -59,6 +59,7 @@ namespace CampusNavigator
         {
             pendingQuestId = questId;
             isOpen = true;
+            CursorLockController.Instance?.UnlockCursor();
             if (ui != null)
             {
                 ui.Show("NPC", greeting, "1) Accept quest", "2) Where next?", "3) Later");

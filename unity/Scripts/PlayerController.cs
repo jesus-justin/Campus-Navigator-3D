@@ -10,6 +10,9 @@ namespace CampusNavigator
         public float gravity = -18f;
         public float mouseSensitivity = 2f;
         public Transform cameraPivot;
+        public bool requireCursorLockForLook = true;
+        public bool requireCursorLockForMove = false;
+        public bool pauseWhileUiOpen = true;
 
         private CharacterController controller;
         private float verticalVelocity;
@@ -27,8 +30,37 @@ namespace CampusNavigator
 
         private void Update()
         {
-            HandleMove();
-            HandleLook();
+            if (pauseWhileUiOpen && IsUiBlockingInput())
+            {
+                return;
+            }
+
+            if (!requireCursorLockForMove || Cursor.lockState == CursorLockMode.Locked)
+            {
+                HandleMove();
+            }
+
+            if (!requireCursorLockForLook || Cursor.lockState == CursorLockMode.Locked)
+            {
+                HandleLook();
+            }
+        }
+
+        private bool IsUiBlockingInput()
+        {
+            if (DialogueManager.Instance != null && DialogueManager.Instance.IsOpen)
+            {
+                return true;
+            }
+            if (InventoryUI.Instance != null && InventoryUI.Instance.IsOpen)
+            {
+                return true;
+            }
+            if (QuestUI.Instance != null && QuestUI.Instance.IsQuestListOpen)
+            {
+                return true;
+            }
+            return false;
         }
 
         private void HandleMove()

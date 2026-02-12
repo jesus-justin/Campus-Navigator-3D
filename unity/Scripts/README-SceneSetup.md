@@ -18,10 +18,15 @@ Create these GameObjects:
 - InventoryManager (add InventoryManager)
 - InventoryUI (add InventoryUI)
 - PlayerInteraction (add PlayerInteraction)
+- CursorLockController (add CursorLockController)
+- GameHud (add GameHud)
+- WebGLApiOverride (add WebGLApiOverride, optional)
+- WebGLFocusHelper (add WebGLFocusHelper, optional)
 
 Input config:
 - In Project window, create InputConfig asset (Create > CampusNavigator > InputConfig).
 - Assign it to PlayerInteraction, DialogueManager, QuestUI, and InventoryUI.
+- Assign it to GameHud (optional for key hints).
 
 ## 2) Player
 
@@ -84,6 +89,10 @@ Dialogue UI:
 Inventory UI:
 - Create a Panel with a Text element for inventory list.
 - Add InventoryUI and assign panel + list text + InputConfig.
+
+HUD:
+- Create a Text element anchored to the top-left for hints.
+- Add GameHud and assign the Text (and InputConfig).
 
 ## 6) API
 

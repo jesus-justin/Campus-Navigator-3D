@@ -23,6 +23,12 @@ For WebGL, the API must be served from the same origin or CORS enabled.
 - WASD to move, mouse to look.
 - E to interact, I for inventory, Q for quest list.
 - ESC to unlock cursor.
+- P to pause (default).
+
+## Start Screen
+
+- Use StartScreen to show a Play button before locking the cursor.
+- The Play button hides the overlay and locks cursor.
 
 ## Common Issues
 

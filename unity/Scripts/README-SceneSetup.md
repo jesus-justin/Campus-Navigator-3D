@@ -22,6 +22,11 @@ Create these GameObjects:
 - GameHud (add GameHud)
 - WebGLApiOverride (add WebGLApiOverride, optional)
 - WebGLFocusHelper (add WebGLFocusHelper, optional)
+- StartScreen (add StartScreen)
+- PauseMenu (add PauseMenu)
+- SettingsManager (add SettingsManager)
+- SettingsUI (add SettingsUI)
+- QuestTrackerUI (add QuestTrackerUI)
 
 Input config:
 - In Project window, create InputConfig asset (Create > CampusNavigator > InputConfig).
@@ -93,6 +98,23 @@ Inventory UI:
 HUD:
 - Create a Text element anchored to the top-left for hints.
 - Add GameHud and assign the Text (and InputConfig).
+
+Start screen:
+- Create a Panel with a Play button.
+- Add StartScreen and assign panel, button, and InputConfig.
+
+Pause menu:
+- Create a Panel with Resume and Quit buttons.
+- Add PauseMenu and assign panel, buttons, InputConfig, and StartScreen reference.
+
+Settings UI:
+- Create a Panel with two Sliders (mouse sensitivity and volume).
+- Add SettingsUI and assign panel + sliders + close button.
+- Add SettingsManager to any scene object.
+
+Quest tracker:
+- Create two Text elements for quest title and step.
+- Add QuestTrackerUI and assign both Texts.
 
 ## 6) API
 

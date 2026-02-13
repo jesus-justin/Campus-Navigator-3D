@@ -13,6 +13,7 @@ namespace CampusNavigator
         public bool requireCursorLockForLook = true;
         public bool requireCursorLockForMove = false;
         public bool pauseWhileUiOpen = true;
+        public bool useSettingsManager = true;
 
         private CharacterController controller;
         private float verticalVelocity;
@@ -89,6 +90,12 @@ namespace CampusNavigator
 
             float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+            if (useSettingsManager && SettingsManager.Instance != null)
+            {
+                mouseX = Input.GetAxis("Mouse X") * SettingsManager.Instance.mouseSensitivity;
+                mouseY = Input.GetAxis("Mouse Y") * SettingsManager.Instance.mouseSensitivity;
+            }
 
             yaw += mouseX;
             pitch -= mouseY;

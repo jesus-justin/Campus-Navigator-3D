@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -21,6 +22,8 @@ namespace CampusNavigator
         public int ActiveTargetLocationId { get; private set; }
         public bool HasActiveTarget => ActiveTargetLocationId > 0;
         public bool HasActiveQuest => activeQuest != null;
+
+        public event Action<QuestDto, QuestStepDto> QuestUpdated;
 
         private void Awake()
         {
@@ -65,6 +68,7 @@ namespace CampusNavigator
                 activeStepIndex = 0;
                 ActiveTargetLocationId = GetActiveStep() != null ? GetActiveStep().target_location_id : 0;
                 QuestUI.Instance?.SetActiveQuest(activeQuest, GetActiveStep());
+                QuestUpdated?.Invoke(activeQuest, GetActiveStep());
             }, OnError));
         }
 
@@ -160,6 +164,7 @@ namespace CampusNavigator
                 activeQuest = null;
                 activeSteps.Clear();
                 ActiveTargetLocationId = 0;
+                QuestUpdated?.Invoke(null, null);
             }, OnError));
         }
 
@@ -178,6 +183,7 @@ namespace CampusNavigator
                 {
                     ActiveTargetLocationId = next.target_location_id;
                     QuestUI.Instance?.SetActiveQuest(activeQuest, next);
+                    QuestUpdated?.Invoke(activeQuest, next);
                 }
             }, OnError));
         }

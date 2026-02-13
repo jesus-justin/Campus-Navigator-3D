@@ -9,6 +9,8 @@ namespace CampusNavigator
         public KeyCode submitKey = KeyCode.F;
         public KeyCode inventoryKey = KeyCode.I;
         public KeyCode questListKey = KeyCode.Q;
+        public KeyCode pauseKey = KeyCode.P;
+        public KeyCode startKey = KeyCode.Return;
 
         public KeyCode dialogueChoice1 = KeyCode.Alpha1;
         public KeyCode dialogueChoice2 = KeyCode.Alpha2;

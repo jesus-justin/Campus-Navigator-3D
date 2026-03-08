@@ -278,6 +278,14 @@ function handle_telemetry_batch(int $user_id, int $session_id): void {
         return;
     }
 
+    $max_batch = 500;
+    if (count($events) > $max_batch) {
+        json_response(['error' => 'Batch too large. Max 500 events per request.'], 413);
+        return;
+    }
+
+    $allowed_types = ['move', 'enter', 'quest_start', 'quest_end', 'quest_step', 'interact'];
+
     $stmt = db()->prepare('INSERT INTO telemetry_events
         (user_id, session_id, event_type, location_id, pos_x, pos_y, pos_z, payload, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
@@ -285,13 +293,16 @@ function handle_telemetry_batch(int $user_id, int $session_id): void {
     $count = 0;
     foreach ($events as $event) {
         $event_type = (string)($event['eventType'] ?? 'move');
+        if (!in_array($event_type, $allowed_types, true)) {
+            continue;
+        }
+
         $location_id = isset($event['locationId']) ? (int)$event['locationId'] : null;
         $pos_x = isset($event['posX']) ? (float)$event['posX'] : null;
         $pos_y = isset($event['posY']) ? (float)$event['posY'] : null;
         $pos_z = isset($event['posZ']) ? (float)$event['posZ'] : null;
         $payload = $event['payload'] ?? null;
-        $created_at = (string)($event['createdAt'] ?? '');
-        $created_at = $created_at !== '' ? $created_at : date('Y-m-d H:i:s');
+        $created_at = sanitize_datetime_or_default((string)($event['createdAt'] ?? ''), date('Y-m-d H:i:s'));
 
         $stmt->execute([
             $user_id,
@@ -307,7 +318,7 @@ function handle_telemetry_batch(int $user_id, int $session_id): void {
         $count++;
     }
 
-    json_response(['inserted' => $count]);
+    json_response(['inserted' => $count, 'received' => count($events)]);
 }
 
 function handle_admin_heatmap(): void {

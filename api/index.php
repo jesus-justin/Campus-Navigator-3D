@@ -19,6 +19,11 @@ try {
 }
 
 function route_request(string $method, string $path): void {
+    if ($method === 'GET' && $path === '/health') {
+        handle_health();
+        return;
+    }
+
     if ($method === 'POST' && $path === '/auth/login') {
         handle_login();
         return;
@@ -79,6 +84,23 @@ function route_request(string $method, string $path): void {
     }
 
     json_response(['error' => 'Not found'], 404);
+}
+
+function handle_health(): void {
+    $db_ok = false;
+
+    try {
+        db()->query('SELECT 1');
+        $db_ok = true;
+    } catch (Throwable $e) {
+        $db_ok = false;
+    }
+
+    json_response([
+        'status' => $db_ok ? 'ok' : 'degraded',
+        'db' => $db_ok ? 'ok' : 'error',
+        'time' => date('c')
+    ], $db_ok ? 200 : 503);
 }
 
 function handle_login(): void {

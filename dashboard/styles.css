@@ -300,6 +300,12 @@ select {
   z-index: 1;
 }
 
+.footer-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 @keyframes rise {
   from {
     transform: translateY(12px);
@@ -323,5 +329,9 @@ select {
   .footer {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .footer-actions {
+    justify-content: center;
   }
 }

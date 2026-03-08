@@ -20,7 +20,10 @@ const ui = {
   heatmap: document.getElementById("heatmap"),
   pathsTable: document.querySelector("#pathsTable tbody"),
   questChart: document.getElementById("questChart"),
-  leaderboardTable: document.querySelector("#leaderboardTable tbody")
+  leaderboardTable: document.querySelector("#leaderboardTable tbody"),
+  exportHeatmapBtn: document.getElementById("exportHeatmapBtn"),
+  exportPathsBtn: document.getElementById("exportPathsBtn"),
+  exportQuestBtn: document.getElementById("exportQuestBtn")
 };
 
 const defaults = {
@@ -31,6 +34,11 @@ const defaults = {
 };
 
 let locationMap = {};
+const latestData = {
+  heatmap: [],
+  paths: [],
+  questStats: []
+};
 
 function setDefaults() {
   ui.apiBase.value = localStorage.getItem("cn_api_base") || defaults.apiBase;
@@ -134,9 +142,12 @@ async function loadDashboard() {
 
     setStatus(true);
     renderOverview(overview.data || {});
-    renderHeatmap(heatmap.data || []);
-    renderPaths(paths.data || [], locationMap);
-    renderQuestStats(questStats.data || []);
+    latestData.heatmap = heatmap.data || [];
+    latestData.paths = paths.data || [];
+    latestData.questStats = questStats.data || [];
+    renderHeatmap(latestData.heatmap);
+    renderPaths(latestData.paths, locationMap);
+    renderQuestStats(latestData.questStats);
     renderLeaderboard(leaderboard.data || []);
   } catch (err) {
     setStatus(false);
@@ -146,6 +157,35 @@ async function loadDashboard() {
     renderQuestStats([]);
     renderLeaderboard([]);
   }
+}
+
+function toCsvValue(value) {
+  const text = String(value ?? "");
+  const escaped = text.replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
+function downloadCsv(filename, rows) {
+  if (!rows.length) {
+    return;
+  }
+
+  const headers = Object.keys(rows[0]);
+  const lines = [headers.map(toCsvValue).join(",")];
+
+  rows.forEach((row) => {
+    lines.push(headers.map((key) => toCsvValue(row[key])).join(","));
+  });
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function renderOverview(data) {
@@ -272,6 +312,9 @@ function renderLeaderboard(rows) {
 
 ui.applyBtn.addEventListener("click", loadDashboard);
 ui.loginBtn.addEventListener("click", loginAdmin);
+ui.exportHeatmapBtn.addEventListener("click", () => downloadCsv("heatmap.csv", latestData.heatmap));
+ui.exportPathsBtn.addEventListener("click", () => downloadCsv("paths.csv", latestData.paths));
+ui.exportQuestBtn.addEventListener("click", () => downloadCsv("quest-stats.csv", latestData.questStats));
 
 setDefaults();
 loadDashboard();

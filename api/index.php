@@ -89,6 +89,12 @@ function route_request(string $method, string $path): void {
         return;
     }
 
+    if ($method === 'GET' && $path === '/admin/quest-leaderboard') {
+        require_admin();
+        handle_admin_quest_leaderboard();
+        return;
+    }
+
     json_response(['error' => 'Not found'], 404);
 }
 
@@ -407,6 +413,33 @@ function handle_admin_overview(): void {
             'newUsersTotal' => $users_total,
             'questRunsTotal' => $runs_total
         ]
+    ]);
+}
+
+function handle_admin_quest_leaderboard(): void {
+    $from = sanitize_datetime_or_default((string)($_GET['from'] ?? ''), date('Y-m-d H:i:s', strtotime('-30 days')));
+    $to = sanitize_datetime_or_default((string)($_GET['to'] ?? ''), date('Y-m-d H:i:s'));
+    $limit = sanitize_int_range($_GET['limit'] ?? 10, 10, 1, 50);
+
+    $stmt = db()->prepare('SELECT q.id AS quest_id,
+        q.title,
+        COUNT(r.id) AS runs,
+        SUM(r.status = \'success\') AS success_runs,
+        ROUND((SUM(r.status = \'success\') / NULLIF(COUNT(r.id), 0)) * 100, 2) AS success_rate,
+        ROUND(AVG(r.time_used_sec), 1) AS avg_time_sec
+        FROM quests q
+        LEFT JOIN quest_runs r ON r.quest_id = q.id AND r.started_at BETWEEN ? AND ?
+        GROUP BY q.id, q.title
+        HAVING runs > 0
+        ORDER BY success_rate DESC, runs DESC
+        LIMIT ?');
+    $stmt->execute([$from, $to, $limit]);
+
+    json_response([
+        'from' => $from,
+        'to' => $to,
+        'limit' => $limit,
+        'data' => $stmt->fetchAll()
     ]);
 }
 

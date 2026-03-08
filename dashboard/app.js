@@ -9,6 +9,7 @@ const ui = {
   toDate: document.getElementById("toDate"),
   heatmapType: document.getElementById("heatmapType"),
   applyBtn: document.getElementById("applyBtn"),
+  resetFiltersBtn: document.getElementById("resetFiltersBtn"),
   status: document.getElementById("status"),
   eventsTotal: document.getElementById("eventsTotal"),
   sessionsTotal: document.getElementById("sessionsTotal"),
@@ -50,8 +51,9 @@ function setDefaults() {
   const prior = new Date();
   prior.setDate(today.getDate() - 7);
 
-  ui.fromDate.value = formatDate(prior);
-  ui.toDate.value = formatDate(today);
+  ui.fromDate.value = localStorage.getItem("cn_from_date") || formatDate(prior);
+  ui.toDate.value = localStorage.getItem("cn_to_date") || formatDate(today);
+  ui.heatmapType.value = localStorage.getItem("cn_heatmap_type") || "building";
 }
 
 async function loginAdmin() {
@@ -130,6 +132,9 @@ async function loadDashboard() {
 
   localStorage.setItem("cn_api_base", ui.apiBase.value.trim());
   localStorage.setItem("cn_token", ui.token.value.trim());
+  localStorage.setItem("cn_from_date", ui.fromDate.value);
+  localStorage.setItem("cn_to_date", ui.toDate.value);
+  localStorage.setItem("cn_heatmap_type", ui.heatmapType.value);
 
   try {
     const locations = await fetchJson("/locations");
@@ -157,6 +162,20 @@ async function loadDashboard() {
     renderQuestStats([]);
     renderLeaderboard([]);
   }
+}
+
+function resetFilters() {
+  const today = new Date();
+  const prior = new Date();
+  prior.setDate(today.getDate() - 7);
+
+  ui.fromDate.value = formatDate(prior);
+  ui.toDate.value = formatDate(today);
+  ui.heatmapType.value = "building";
+
+  localStorage.removeItem("cn_from_date");
+  localStorage.removeItem("cn_to_date");
+  localStorage.removeItem("cn_heatmap_type");
 }
 
 function toCsvValue(value) {
@@ -312,6 +331,10 @@ function renderLeaderboard(rows) {
 
 ui.applyBtn.addEventListener("click", loadDashboard);
 ui.loginBtn.addEventListener("click", loginAdmin);
+ui.resetFiltersBtn.addEventListener("click", () => {
+  resetFilters();
+  loadDashboard();
+});
 ui.exportHeatmapBtn.addEventListener("click", () => downloadCsv("heatmap.csv", latestData.heatmap));
 ui.exportPathsBtn.addEventListener("click", () => downloadCsv("paths.csv", latestData.paths));
 ui.exportQuestBtn.addEventListener("click", () => downloadCsv("quest-stats.csv", latestData.questStats));

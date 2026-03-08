@@ -83,6 +83,12 @@ function route_request(string $method, string $path): void {
         return;
     }
 
+    if ($method === 'GET' && $path === '/admin/overview') {
+        require_admin();
+        handle_admin_overview();
+        return;
+    }
+
     json_response(['error' => 'Not found'], 404);
 }
 
@@ -370,6 +376,38 @@ function handle_admin_quest_stats(): void {
     $stmt->execute([$from, $to]);
 
     json_response(['from' => $from, 'to' => $to, 'data' => $stmt->fetchAll()]);
+}
+
+function handle_admin_overview(): void {
+    $from = sanitize_datetime_or_default((string)($_GET['from'] ?? ''), date('Y-m-d H:i:s', strtotime('-7 days')));
+    $to = sanitize_datetime_or_default((string)($_GET['to'] ?? ''), date('Y-m-d H:i:s'));
+
+    $events_stmt = db()->prepare('SELECT COUNT(*) AS total FROM telemetry_events WHERE created_at BETWEEN ? AND ?');
+    $events_stmt->execute([$from, $to]);
+    $events_total = (int)($events_stmt->fetch()['total'] ?? 0);
+
+    $sessions_stmt = db()->prepare('SELECT COUNT(*) AS total FROM sessions WHERE created_at BETWEEN ? AND ?');
+    $sessions_stmt->execute([$from, $to]);
+    $sessions_total = (int)($sessions_stmt->fetch()['total'] ?? 0);
+
+    $users_stmt = db()->prepare('SELECT COUNT(*) AS total FROM users WHERE created_at BETWEEN ? AND ?');
+    $users_stmt->execute([$from, $to]);
+    $users_total = (int)($users_stmt->fetch()['total'] ?? 0);
+
+    $runs_stmt = db()->prepare('SELECT COUNT(*) AS total FROM quest_runs WHERE started_at BETWEEN ? AND ?');
+    $runs_stmt->execute([$from, $to]);
+    $runs_total = (int)($runs_stmt->fetch()['total'] ?? 0);
+
+    json_response([
+        'from' => $from,
+        'to' => $to,
+        'data' => [
+            'eventsTotal' => $events_total,
+            'sessionsTotal' => $sessions_total,
+            'newUsersTotal' => $users_total,
+            'questRunsTotal' => $runs_total
+        ]
+    ]);
 }
 
 function insert_event(int $user_id, int $session_id, string $event_type, ?int $location_id, ?float $x, ?float $y, ?float $z, ?array $payload): void {

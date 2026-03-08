@@ -10,6 +10,10 @@ const ui = {
   heatmapType: document.getElementById("heatmapType"),
   applyBtn: document.getElementById("applyBtn"),
   status: document.getElementById("status"),
+  eventsTotal: document.getElementById("eventsTotal"),
+  sessionsTotal: document.getElementById("sessionsTotal"),
+  newUsersTotal: document.getElementById("newUsersTotal"),
+  questRunsTotal: document.getElementById("questRunsTotal"),
   totalVisits: document.getElementById("totalVisits"),
   topLocation: document.getElementById("topLocation"),
   questSuccess: document.getElementById("questSuccess"),
@@ -121,20 +125,30 @@ async function loadDashboard() {
   try {
     const locations = await fetchJson("/locations");
     locationMap = buildLocationMap(locations.locations || []);
+    const overview = await fetchJson(`/admin/overview?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
     const heatmap = await fetchJson(`/admin/heatmap?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&type=${encodeURIComponent(type)}`);
     const paths = await fetchJson(`/admin/paths?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&top=15`);
     const questStats = await fetchJson(`/admin/quest-stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
 
     setStatus(true);
+    renderOverview(overview.data || {});
     renderHeatmap(heatmap.data || []);
     renderPaths(paths.data || [], locationMap);
     renderQuestStats(questStats.data || []);
   } catch (err) {
     setStatus(false);
+    renderOverview({});
     renderHeatmap([]);
     renderPaths([], {});
     renderQuestStats([]);
   }
+}
+
+function renderOverview(data) {
+  ui.eventsTotal.textContent = Number(data.eventsTotal || 0).toLocaleString();
+  ui.sessionsTotal.textContent = Number(data.sessionsTotal || 0).toLocaleString();
+  ui.newUsersTotal.textContent = Number(data.newUsersTotal || 0).toLocaleString();
+  ui.questRunsTotal.textContent = Number(data.questRunsTotal || 0).toLocaleString();
 }
 
 function buildLocationMap(locations) {

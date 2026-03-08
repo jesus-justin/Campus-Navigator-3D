@@ -8,6 +8,7 @@ const ui = {
   fromDate: document.getElementById("fromDate"),
   toDate: document.getElementById("toDate"),
   heatmapType: document.getElementById("heatmapType"),
+  refreshInterval: document.getElementById("refreshInterval"),
   applyBtn: document.getElementById("applyBtn"),
   resetFiltersBtn: document.getElementById("resetFiltersBtn"),
   status: document.getElementById("status"),
@@ -24,7 +25,8 @@ const ui = {
   leaderboardTable: document.querySelector("#leaderboardTable tbody"),
   exportHeatmapBtn: document.getElementById("exportHeatmapBtn"),
   exportPathsBtn: document.getElementById("exportPathsBtn"),
-  exportQuestBtn: document.getElementById("exportQuestBtn")
+  exportQuestBtn: document.getElementById("exportQuestBtn"),
+  lastUpdated: document.getElementById("lastUpdated")
 };
 
 const defaults = {
@@ -40,6 +42,7 @@ const latestData = {
   paths: [],
   questStats: []
 };
+let autoRefreshTimer = null;
 
 function setDefaults() {
   ui.apiBase.value = localStorage.getItem("cn_api_base") || defaults.apiBase;
@@ -54,6 +57,7 @@ function setDefaults() {
   ui.fromDate.value = localStorage.getItem("cn_from_date") || formatDate(prior);
   ui.toDate.value = localStorage.getItem("cn_to_date") || formatDate(today);
   ui.heatmapType.value = localStorage.getItem("cn_heatmap_type") || "building";
+  ui.refreshInterval.value = localStorage.getItem("cn_refresh_interval") || "0";
 }
 
 async function loginAdmin() {
@@ -135,6 +139,7 @@ async function loadDashboard() {
   localStorage.setItem("cn_from_date", ui.fromDate.value);
   localStorage.setItem("cn_to_date", ui.toDate.value);
   localStorage.setItem("cn_heatmap_type", ui.heatmapType.value);
+  localStorage.setItem("cn_refresh_interval", ui.refreshInterval.value);
 
   try {
     const locations = await fetchJson("/locations");
@@ -154,6 +159,7 @@ async function loadDashboard() {
     renderPaths(latestData.paths, locationMap);
     renderQuestStats(latestData.questStats);
     renderLeaderboard(leaderboard.data || []);
+    updateLastUpdated(true);
   } catch (err) {
     setStatus(false);
     renderOverview({});
@@ -161,7 +167,33 @@ async function loadDashboard() {
     renderPaths([], {});
     renderQuestStats([]);
     renderLeaderboard([]);
+    updateLastUpdated(false);
   }
+}
+
+function updateLastUpdated(success) {
+  const now = new Date();
+  if (success) {
+    ui.lastUpdated.textContent = `Last updated: ${now.toLocaleString()}`;
+    return;
+  }
+  ui.lastUpdated.textContent = `Last update failed: ${now.toLocaleString()}`;
+}
+
+function setupAutoRefresh() {
+  if (autoRefreshTimer) {
+    clearInterval(autoRefreshTimer);
+    autoRefreshTimer = null;
+  }
+
+  const seconds = Number(ui.refreshInterval.value || 0);
+  if (!seconds) {
+    return;
+  }
+
+  autoRefreshTimer = setInterval(() => {
+    loadDashboard();
+  }, seconds * 1000);
 }
 
 function resetFilters() {
@@ -331,6 +363,10 @@ function renderLeaderboard(rows) {
 
 ui.applyBtn.addEventListener("click", loadDashboard);
 ui.loginBtn.addEventListener("click", loginAdmin);
+ui.refreshInterval.addEventListener("change", () => {
+  localStorage.setItem("cn_refresh_interval", ui.refreshInterval.value);
+  setupAutoRefresh();
+});
 ui.resetFiltersBtn.addEventListener("click", () => {
   resetFilters();
   loadDashboard();
@@ -340,4 +376,5 @@ ui.exportPathsBtn.addEventListener("click", () => downloadCsv("paths.csv", lates
 ui.exportQuestBtn.addEventListener("click", () => downloadCsv("quest-stats.csv", latestData.questStats));
 
 setDefaults();
+setupAutoRefresh();
 loadDashboard();

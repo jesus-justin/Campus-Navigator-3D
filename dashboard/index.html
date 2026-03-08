@@ -64,6 +64,14 @@
         <option value="landmark">Landmark</option>
       </select>
     </div>
+    <div class="control-group">
+      <label for="refreshInterval">Auto Refresh</label>
+      <select id="refreshInterval">
+        <option value="0">Off</option>
+        <option value="30">Every 30s</option>
+        <option value="60">Every 60s</option>
+      </select>
+    </div>
     <button id="applyBtn" class="primary">Apply Filters</button>
     <button id="resetFiltersBtn" class="secondary" type="button">Reset Filters</button>
   </section>
@@ -166,6 +174,7 @@
       <button id="exportPathsBtn" class="secondary" type="button">Export Paths CSV</button>
       <button id="exportQuestBtn" class="secondary" type="button">Export Quest CSV</button>
     </div>
+    <span class="muted" id="lastUpdated">Last updated: never</span>
     <span class="muted">API: /admin/heatmap, /admin/paths, /admin/quest-stats</span>
   </footer>
 

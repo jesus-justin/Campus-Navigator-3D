@@ -74,3 +74,33 @@ function require_admin(): array {
     }
     return $auth;
 }
+
+function sanitize_datetime_or_default(string $value, string $default): string {
+    $value = trim($value);
+    if ($value === '') {
+        return $default;
+    }
+
+    $dt = date_create($value);
+    if ($dt === false) {
+        return $default;
+    }
+
+    return $dt->format('Y-m-d H:i:s');
+}
+
+function sanitize_int_range($value, int $default, int $min, int $max): int {
+    if (!is_numeric($value)) {
+        return $default;
+    }
+
+    $int = (int)$value;
+    if ($int < $min) {
+        return $min;
+    }
+    if ($int > $max) {
+        return $max;
+    }
+
+    return $int;
+}

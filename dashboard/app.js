@@ -19,7 +19,8 @@ const ui = {
   questSuccess: document.getElementById("questSuccess"),
   heatmap: document.getElementById("heatmap"),
   pathsTable: document.querySelector("#pathsTable tbody"),
-  questChart: document.getElementById("questChart")
+  questChart: document.getElementById("questChart"),
+  leaderboardTable: document.querySelector("#leaderboardTable tbody")
 };
 
 const defaults = {
@@ -129,18 +130,21 @@ async function loadDashboard() {
     const heatmap = await fetchJson(`/admin/heatmap?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&type=${encodeURIComponent(type)}`);
     const paths = await fetchJson(`/admin/paths?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&top=15`);
     const questStats = await fetchJson(`/admin/quest-stats?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+    const leaderboard = await fetchJson(`/admin/quest-leaderboard?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&limit=10`);
 
     setStatus(true);
     renderOverview(overview.data || {});
     renderHeatmap(heatmap.data || []);
     renderPaths(paths.data || [], locationMap);
     renderQuestStats(questStats.data || []);
+    renderLeaderboard(leaderboard.data || []);
   } catch (err) {
     setStatus(false);
     renderOverview({});
     renderHeatmap([]);
     renderPaths([], {});
     renderQuestStats([]);
+    renderLeaderboard([]);
   }
 }
 
@@ -248,6 +252,22 @@ function renderQuestStats(rows) {
 
   const overall = totalRuns > 0 ? Math.round((successRuns / totalRuns) * 100) : 0;
   ui.questSuccess.textContent = `${overall}%`;
+}
+
+function renderLeaderboard(rows) {
+  ui.leaderboardTable.innerHTML = "";
+  if (!rows.length) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td colspan=\"4\" class=\"muted\">No leaderboard data</td>";
+    ui.leaderboardTable.appendChild(tr);
+    return;
+  }
+
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${row.title || `Quest ${row.quest_id}`}</td><td>${Number(row.runs || 0)}</td><td>${Number(row.success_rate || 0)}%</td><td>${Number(row.avg_time_sec || 0)}</td>`;
+    ui.leaderboardTable.appendChild(tr);
+  });
 }
 
 ui.applyBtn.addEventListener("click", loadDashboard);

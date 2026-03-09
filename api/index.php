@@ -15,7 +15,22 @@ if ($path === '') {
 try {
     route_request($method, $path);
 } catch (Throwable $e) {
-    json_response(['error' => 'Server error'], 500);
+    // Log error for debugging (in production, use proper logging)
+    error_log('API Error: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+    
+    // Return generic error to client (don't expose internal details)
+    $isDev = getenv('DEBUG_MODE') === 'true' || (defined('DEBUG_MODE') && DEBUG_MODE);
+    $response = ['error' => 'Server error'];
+    
+    if ($isDev) {
+        $response['debug'] = [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ];
+    }
+    
+    json_response($response, 500);
 }
 
 function route_request(string $method, string $path): void {

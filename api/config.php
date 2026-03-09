@@ -10,6 +10,15 @@ define('TOKEN_TTL_DAYS', 7);
 
 define('JSON_CONTENT_TYPE', 'application/json; charset=utf-8');
 
+// Security headers
+function set_security_headers(): void {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: DENY');
+    header('X-XSS-Protection: 1; mode=block');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Content-Security-Policy: default-src \'self\'');
+}
+
 function db(): PDO {
     static $pdo = null;
     if ($pdo === null) {
@@ -24,6 +33,7 @@ function db(): PDO {
 
 function json_response($data, int $status = 200): void {
     http_response_code($status);
+    set_security_headers();
     header('Content-Type: ' . JSON_CONTENT_TYPE);
     echo json_encode($data);
 }

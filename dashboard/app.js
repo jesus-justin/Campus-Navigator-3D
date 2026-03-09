@@ -44,6 +44,44 @@ const latestData = {
 };
 let autoRefreshTimer = null;
 
+/**
+ * Validates URL format
+ * @param {string} url - The URL to validate
+ * @returns {boolean} True if valid URL
+ */
+function isValidUrl(url) {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sanitizes user input to prevent XSS
+ * @param {string} str - The string to sanitize
+ * @returns {string} Sanitized string
+ */
+function sanitizeInput(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/**
+ * Validates date range
+ * @param {string} fromDate - Start date
+ * @param {string} toDate - End date
+ * @returns {boolean} True if valid range
+ */
+function isValidDateRange(fromDate, toDate) {
+  if (!fromDate || !toDate) return false;
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+  return from <= to;
+}
+
 function setDefaults() {
   ui.apiBase.value = localStorage.getItem("cn_api_base") || defaults.apiBase;
   ui.token.value = localStorage.getItem("cn_token") || defaults.token;
@@ -62,10 +100,23 @@ function setDefaults() {
 
 async function loginAdmin() {
   const base = ui.apiBase.value.trim() || defaults.apiBase;
+  
+  // Validate API base URL
+  if (!isValidUrl(base)) {
+    ui.loginMessage.textContent = "Invalid API base URL";
+    return;
+  }
+  
   const payload = {
     externalId: ui.externalId.value.trim(),
     displayName: ui.displayName.value.trim()
   };
+
+  // Validate required fields
+  if (!payload.externalId || !payload.displayName) {
+    ui.loginMessage.textContent = "External ID and Display Name are required";
+    return;
+  }
 
   ui.loginMessage.textContent = "Requesting token...";
 

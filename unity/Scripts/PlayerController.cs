@@ -2,17 +2,56 @@ using UnityEngine;
 
 namespace CampusNavigator
 {
+    /// <summary>
+    /// Controls player movement and camera rotation in the 3D campus environment.
+    /// Handles walking, sprinting, mouse look, and UI interaction pausing.
+    /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
+        /// <summary>
+        /// Normal walking speed in meters per second.
+        /// </summary>
         public float walkSpeed = 4f;
+        
+        /// <summary>
+        /// Sprint speed when holding sprint key.
+        /// </summary>
         public float sprintSpeed = 7f;
+        
+        /// <summary>
+        /// Gravity force applied to the player.
+        /// </summary>
         public float gravity = -18f;
+        
+        /// <summary>
+        /// Mouse sensitivity multiplier for camera rotation.
+        /// </summary>
         public float mouseSensitivity = 2f;
+        
+        /// <summary>
+        /// Transform for the camera pivot point (usually the main camera).
+        /// </summary>
         public Transform cameraPivot;
+        
+        /// <summary>
+        /// Whether cursor must be locked to enable mouse look.
+        /// </summary>
         public bool requireCursorLockForLook = true;
+        
+        /// <summary>
+        /// Whether cursor must be locked to enable movement.
+        /// </summary>
         public bool requireCursorLockForMove = false;
+        
+        /// <summary>
+        /// Whether to pause player input when UI panels are open.
+        /// </summary>
         public bool pauseWhileUiOpen = true;
+        
+        /// <summary>
+        /// Whether to use SettingsManager for sensitivity settings.
+        /// </summary>
         public bool useSettingsManager = true;
 
         private CharacterController controller;

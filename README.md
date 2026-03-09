@@ -1,6 +1,79 @@
 # Campus-Navigator-3D
 - A 3D map of a university where users play by navigating tasks.
 
+## Quick Start
+
+### Prerequisites
+- XAMPP (PHP 7.4+ with MySQL)
+- Unity 2021.3 LTS or later
+- Modern web browser (Chrome, Firefox, Edge)
+- Git (for version control)
+
+### Installation
+
+1. **Clone the repository** to your XAMPP htdocs folder:
+	```bash
+	cd C:\xampp\htdocs
+	git clone <repository-url> Campus-Navigator-3D
+	```
+
+2. **Set up the database**:
+	- Start XAMPP and ensure MySQL is running
+	- Open phpMyAdmin (http://localhost/phpmyadmin)
+	- Create a new database named `campus_navigator`
+	- Import the schema:
+	  ```bash
+	  mysql -u root < db/schema.sql
+	  ```
+	- Import sample data:
+	  ```bash
+	  mysql -u root < db/seed.sql
+	  ```
+
+3. **Configure the API**:
+	- Copy `api/.env.example` to `api/config.php` (or update existing config.php)
+	- Update database credentials if needed:
+	  ```php
+	  define('DB_HOST', '127.0.0.1');
+	  define('DB_NAME', 'campus_navigator');
+	  define('DB_USER', 'root');
+	  define('DB_PASS', '');
+	  ```
+
+4. **Test the API**:
+	- Open http://localhost/Campus-Navigator-3D/api/index.php?path=/health
+	- You should see: `{"status":"ok","db":"ok","time":"..."}`
+
+5. **Open the Dashboard**:
+	- Navigate to http://localhost/Campus-Navigator-3D/dashboard/
+	- Use default credentials:
+	  - External ID: `admin-001`
+	  - Display Name: `Admin User`
+	- Click "Request Token" to authenticate
+
+6. **Open Unity Project**:
+	- Launch Unity Hub
+	- Add the project from `Campus-Navigator-3D/unity/`
+	- Open with Unity 2021.3 LTS or later
+	- Update API settings in `ApiConfig.cs` if needed
+
+### Troubleshooting
+
+**Database connection fails:**
+- Verify MySQL is running in XAMPP
+- Check database credentials in `api/config.php`
+- Ensure `campus_navigator` database exists
+
+**API returns 404:**
+- Check that XAMPP Apache is running
+- Verify the project is in the htdocs folder
+- Try accessing via PATH_INFO or query parameter
+
+**Dashboard won't authenticate:**
+- Verify the API health endpoint works first
+- Check browser console for errors
+- Ensure the admin user exists in the database
+
 ## Concept Summary
 - 3D campus navigation with NPC students, quests, and time-based challenges.
 - Gamified tasks: find rooms, submit forms, escort NPCs, event check-ins.

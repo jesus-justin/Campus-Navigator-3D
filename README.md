@@ -248,6 +248,17 @@ Navigation efficiency:
 - Export FBX per building or per block.
 - Add simple colliders and navigation meshes in Unity.
 
+BatStateU Lipa integration (implemented in this repo):
+- Runtime map profile + model loader: unity/Scripts/CampusMapProfile.cs and unity/Scripts/CampusMapRuntime.cs
+- Anchor-to-location mapping: unity/Scripts/CampusLocationAnchor.cs
+- Coverage validation: unity/Scripts/CampusMapCoverageMonitor.cs
+- Integration guide: unity/README-Batangas-Lipa-Map.md
+- Attribution manifest: unity/THIRD_PARTY_ASSETS.md
+
+Model reference used:
+- https://sketchfab.com/3d-models/batangas-state-university-the-neu-lipa-map-abff63aeea7c42a1a7916b1a2a25c24a
+- License reported on source page: CC BY 4.0
+
 ## Privacy and Data Guidance (Recommended)
 - Pseudonymize users (external_id) and avoid real names.
 - Avoid collecting exact real-world identifiers in telemetry.

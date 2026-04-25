@@ -8,6 +8,8 @@ Create these GameObjects:
 
 - ApiConfig (add ApiConfig)
 - ApiClient (add ApiClient)
+- CampusMapRuntime (add CampusMapRuntime)
+- CampusMapCoverageMonitor (add CampusMapCoverageMonitor)
 - TelemetryBuffer (add TelemetryBuffer)
 - QuestManager (add QuestManager)
 - QuestUI (add QuestUI)
@@ -33,6 +35,14 @@ Input config:
 - Assign it to PlayerInteraction, DialogueManager, QuestUI, and InventoryUI.
 - Assign it to GameHud (optional for key hints).
 
+Campus map config:
+- In Project window, create CampusMapProfile asset (Create > CampusNavigator > Campus Map Profile).
+- Fill sourceUrl, authorName, licenseName, and attributionText from your model source.
+- Assign the imported BatStateU Lipa model prefab to CampusMapProfile.modelPrefab.
+- Assign the profile to CampusMapRuntime.
+- Set LocationSpawner.mapRuntime to the CampusMapRuntime object.
+- Set CampusMapCoverageMonitor.mapRuntime and .locationSpawner.
+
 ## 2) Player
 
 - Create an empty GameObject "Player" and tag it as Player.
@@ -53,6 +63,8 @@ Input config:
 Option A (recommended): Auto-spawn from API
 - Add LocationSpawner to the LocationSpawner object.
 - (Optional) Assign a marker prefab with a trigger collider.
+- Set LocationSpawner.snapToCampusAnchors = true to place triggers on model anchors.
+- Add CampusLocationAnchor to model child transforms, and set locationId to match DB locations.id.
 
 Option B (manual):
 - Create an empty GameObject with a BoxCollider (Is Trigger = true).
